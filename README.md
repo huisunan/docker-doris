@@ -1,6 +1,5 @@
 # docker-doris
 
-
 docker hub repo [dyrnq/doris](https://hub.docker.com/r/dyrnq/doris/tags)
 
 features:
@@ -24,8 +23,8 @@ features:
 | demo       | path                                                                                                                                             |
 |------------|--------------------------------------------------------------------------------------------------------------------------------------------------|
 | standalone | [usage-demo/docker/run-containers-standalone.sh](https://github.com/dyrnq/docker-doris/blob/main/usage-demo/docker/run-containers-standalone.sh) |
-| 1fe-1be    | [usage-demo/docker/run-containers-1fe1be.sh](https://github.com/dyrnq/docker-doris/blob/main/usage-demo/docker/run-containers-1fe-1be.sh)        |
-| 3fe-3be    | [usage-demo/docker/run-containers-3fe3be.sh](https://github.com/dyrnq/docker-doris/blob/main/usage-demo/docker/run-containers-3fe-3be.sh)        |
+| 1fe-1be    | [usage-demo/docker/run-containers-1fe-1be.sh](https://github.com/dyrnq/docker-doris/blob/main/usage-demo/docker/run-containers-1fe-1be.sh)       |
+| 3fe-3be    | [usage-demo/docker/run-containers-3fe-3be.sh](https://github.com/dyrnq/docker-doris/blob/main/usage-demo/docker/run-containers-3fe-3be.sh)       |
 
 ### docker compose
 | demo       | path                                                                                                                                     |
@@ -40,3 +39,9 @@ features:
 |------------|--------------------------------------------------------------------------------------------------------------------------------------|
 | standalone | [usage-demo/k8s/standalone/sts-nopvc.yaml](https://github.com/dyrnq/docker-doris/blob/main/usage-demo/k8s/standalone/sts-nopvc.yaml) |
 | 3fe-3be    | [usage-demo/k8s/3fe-3be/sts-nopvc.yaml](https://github.com/dyrnq/docker-doris/blob/main/usage-demo/k8s/3fe-3be/sts-nopvc.yaml)    |
+
+
+## ref
+
+- [github.com/apache/doris](https://github.com/apache/doris)
+- [doris.apache.org](https://doris.apache.org)
