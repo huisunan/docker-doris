@@ -50,10 +50,9 @@ RUN set -ex; \
     zstd \
     bzip2 \
     netcat-openbsd \
-    patchelf gdb binutils binutils-common mysql-client \
-    curl wget less vim htop iproute2 numactl jq iotop sysstat \
-    tcpdump iputils-ping dnsutils strace lsof blktrace tzdata \
-    bpfcc-tools silversearcher-ag \
+    binutils binutils-common mysql-client \
+    curl wget less vim htop iproute2 numactl jq iotop \
+    tcpdump iputils-ping dnsutils lsof tzdata \
     net-tools && \
     localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 && \
     ( if id ubuntu 2>/dev/null; then  userdel -r ubuntu; fi ) && \
@@ -80,7 +79,7 @@ RUN set -ex; \
                     dorisArch="arm64"; dorisFileExt=".tar.xz"; tarCmd="J"; \
                     ;; \
                 *) \
-                dorisArch="arm64"; dorisFileExt=".tar.gz"; tarCmd="z"; \
+                    dorisArch="arm64"; dorisFileExt=".tar.gz"; tarCmd="z"; \
                     ;; \
             esac; \
             ;; \
@@ -97,7 +96,7 @@ RUN set -ex; \
                     dorisArch="x64"; dorisFileExt=".tar.xz"; tarCmd="J"; \
                     ;; \
                 *) \
-                dorisArch="x64"; dorisFileExt=".tar.gz"; tarCmd="z"; \
+                    dorisArch="x64"; dorisFileExt=".tar.gz"; tarCmd="z"; \
                     ;; \
             esac; \
             ;; \
