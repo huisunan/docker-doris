@@ -28,7 +28,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
 
 
-RUN set -eux; \
+RUN set -ex; \
     apt-get clean && \
     apt-get update && \
     apt-get -y upgrade && \
@@ -64,7 +64,7 @@ RUN set -eux; \
 
 
 
-RUN set -eux; \
+RUN set -ex; \
     ARCH="$(uname -m)"; \
     case "${ARCH}" in \
         aarch64|arm64) \
