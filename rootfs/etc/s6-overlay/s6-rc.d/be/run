@@ -1,0 +1,17 @@
+#!/usr/bin/with-contenv bash
+# shellcheck shell=bash
+# shellcheck disable=SC1091
+# shellcheck disable=SC2086
+
+set -eo pipefail
+
+pushd /opt/apache-doris/be || exit 1
+
+opts=""
+
+if grep -q -E "\-\-console" bin/start_be.sh; then
+    opts="${opts} --console"
+fi
+
+exec gosu doris bin/start_be.sh ${opts}
+

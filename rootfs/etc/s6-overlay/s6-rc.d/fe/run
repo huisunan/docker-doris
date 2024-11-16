@@ -1,0 +1,78 @@
+#!/usr/bin/with-contenv bash
+# shellcheck shell=bash
+# shellcheck disable=SC1091
+# shellcheck disable=SC2086
+
+
+set -eo pipefail
+
+pushd /opt/apache-doris/fe || exit 1
+
+opts=""
+
+if grep -q -E "\-\-console" bin/start_fe.sh; then
+    opts="${opts} --console"
+fi
+
+
+## handle fe servers
+if [ -n "${FE_SERVERS}" ]; then
+
+
+
+    # specific for k8s sts pod, because the FE_ID cant set var ENV
+    # so we need to get the index from hostname
+    if [ -z "${FE_ID}" ]; then
+        HOSTNAME="$(hostname -s)"
+        if [[ $HOSTNAME =~ (.*)-([0-9]+)$ ]]; then
+            ORD=${BASH_REMATCH[2]}
+            export FE_ID="$((ORD + 1 ))"
+        else
+            echo "Failed to get index from hostname $HOSTNAME"
+            exit 1
+        fi
+    fi
+
+
+
+    fe_helper=""
+    mapfile -d, -t feServerArray <<< "${FE_SERVERS}"
+    feLength=${#feServerArray[@]}
+    if [[ $feLength -gt 1 ]]; then
+
+    for i in "${!feServerArray[@]}"; do
+        val="${feServerArray[$i]}";
+        val=${val// /} ## remove all spaces
+
+        tmpFeName=$(echo "${val}"           | awk -F ':' '{ sub(/ /, ""); print$1}')
+        tmpFeIp=$(echo "${val}"             | awk -F ':' '{ sub(/ /, ""); print$2}')
+        tmpFeEditLogPort=$(echo "${val}"    | awk -F ':' '{ sub(/ /, ""); print$3}')
+
+        tmpFeName=${tmpFeName//[!0-9]/} ## remove all non-numeric characters
+
+
+
+
+        if [[ $i == 0 ]]; then
+            fe_helper="--helper ${tmpFeIp}:${tmpFeEditLogPort}"
+        fi
+    done
+
+    fi
+
+
+    if [[ $FE_ID -eq 1 ]]; then
+        fe_helper=""
+    fi
+
+
+    echo "${fe_helper}"
+
+    opts="${opts} ${fe_helper}"
+fi
+
+
+
+
+
+exec gosu doris bin/start_fe.sh ${opts}

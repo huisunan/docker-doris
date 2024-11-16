@@ -1,0 +1,118 @@
+---
+apiVersion: v1
+kind: Service
+metadata: 
+  name: doris-stand
+  namespace: default
+  labels: 
+    app: doris-stand
+spec:
+  # The following adds session affinity
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 28800
+  type: NodePort
+  ports: 
+    - name: http
+      port: 8030
+      protocol: TCP
+      targetPort: 8030
+      # nodePort: 32130
+    - name: mysql
+      port: 9030
+      protocol: TCP
+      targetPort: 9030
+      # nodePort: 32230
+  selector: 
+    app: doris-stand
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: doris-stand-headless
+  labels:
+    app: doris-stand
+spec:
+  type: ClusterIP
+  clusterIP: None
+  publishNotReadyAddresses: true
+  ports:
+    - name: thrift-rpc
+      port: 9020
+      protocol: TCP
+      targetPort: 9020
+    - name: mysql
+      port: 9030
+      protocol: TCP
+      targetPort: 9030
+    - name: edit-log
+      port: 9010
+      protocol: TCP
+      targetPort: 9010
+  selector: 
+    app: doris-stand
+---
+kind: StatefulSet
+apiVersion: apps/v1
+metadata:
+  name: doris-stand
+  labels:
+    app: doris-stand
+spec:
+  serviceName: doris-stand-headless
+  updateStrategy:
+    rollingUpdate: {}
+    type: RollingUpdate
+  replicas: 1
+  selector:
+    matchLabels:
+      app: doris-stand
+  template:
+    metadata:
+      labels:
+        app: doris-stand
+    spec:
+      hostNetwork: false
+      dnsPolicy: ClusterFirst
+      containers:
+        - name: doris-stand
+          env:
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: POD_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+          - name: TZ
+            value: Asia/Shanghai
+          - name: RUN_MODE
+            value: standalone
+          image: dyrnq/doris:2.1.7
+          volumeMounts:
+          - mountPath: /opt/apache-doris/fe/doris-meta
+            name: volume-fe
+          - mountPath: /opt/apache-doris/be/storage
+            name: volume-be
+          ports:
+            - containerPort: 8030
+              protocol: TCP
+            - containerPort: 9020
+              protocol: TCP
+            - containerPort: 9030
+              protocol: TCP
+            - containerPort: 9010
+              protocol: TCP
+      volumes:
+        - name: volume-fe
+          emptyDir: {}
+        - name: volume-be
+          emptyDir: {}

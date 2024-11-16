@@ -1,0 +1,125 @@
+services:  
+  dfe-1:
+    image: docker.io/dyrnq/doris:2.1.7
+    restart: always
+    hostname: dfe-1
+    volumes:
+      - dfe-1-log:/opt/apache-doris/fe/log
+      - dfe-1-doris-meta:/opt/apache-doris/fe/doris-meta
+    privileged: true
+    environment:
+      - TZ=Asia/Shanghai
+      - RUN_MODE=fe
+      - FE_SERVERS=fe1:dfe-1:9010,fe2:dfe-2:9010,fe3:dfe-3:9010
+      - FE_ID=1
+    ports:
+      - 28030:8030
+      - 29030:9030
+    networks:
+      doris-network:
+        # ipv4_address: 172.20.80.2
+  dfe-2:
+    image: docker.io/dyrnq/doris:2.1.7
+    restart: always
+    hostname: dfe-2
+    volumes:
+      - dfe-2-log:/opt/apache-doris/fe/log
+      - dfe-2-doris-meta:/opt/apache-doris/fe/doris-meta
+    privileged: true
+    environment:
+      - TZ=Asia/Shanghai
+      - RUN_MODE=fe
+      - FE_SERVERS=fe1:dfe-1:9010,fe2:dfe-2:9010,fe3:dfe-3:9010
+      - FE_ID=2
+    # ports:
+    #   - 8030:8030
+    #   - 9030:9030
+    networks:
+      doris-network:
+  dfe-3:
+    image: docker.io/dyrnq/doris:2.1.7
+    restart: always
+    hostname: dfe-3
+    volumes:
+      - dfe-3-log:/opt/apache-doris/fe/log
+      - dfe-3-doris-meta:/opt/apache-doris/fe/doris-meta
+    privileged: true
+    environment:
+      - TZ=Asia/Shanghai
+      - RUN_MODE=fe
+      - FE_SERVERS=fe1:dfe-1:9010,fe2:dfe-2:9010,fe3:dfe-3:9010
+      - FE_ID=3      
+    # ports:
+    #   - 8030:8030
+    #   - 9030:9030
+    networks:
+      doris-network:
+  dbe-1:
+    image: docker.io/dyrnq/doris:2.1.7
+    restart: always
+    hostname: dbe-1
+    volumes:
+      - dbe-1-log:/opt/apache-doris/be/log
+      - dbe-1-storage:/opt/apache-doris/be/storage
+    privileged: true
+    environment:
+      - TZ=Asia/Shanghai
+      - RUN_MODE=be
+      - FE_SERVERS=fe1:dfe-1:9010,fe2:dfe-2:9010,fe3:dfe-3:9010
+      - BE_ADDR=dbe-1:9050
+    ports:
+      - 29050:9050
+    networks:
+      doris-network:
+  dbe-2:
+    image: docker.io/dyrnq/doris:2.1.7
+    restart: always
+    hostname: dbe-2
+    volumes:
+      - dbe-2-log:/opt/apache-doris/be/log
+      - dbe-2-storage:/opt/apache-doris/be/storage
+    privileged: true
+    environment:
+      - TZ=Asia/Shanghai
+      - RUN_MODE=be
+      - FE_SERVERS=fe1:dfe-1:9010,fe2:dfe-2:9010,fe3:dfe-3:9010
+      - BE_ADDR=dbe-2:9050
+    # ports:
+    #   - 29050:9050
+    networks:
+      doris-network:
+  dbe-3:
+    image: docker.io/dyrnq/doris:2.1.7
+    restart: always
+    hostname: dbe-3
+    volumes:
+      - dbe-3-log:/opt/apache-doris/be/log
+      - dbe-3-storage:/opt/apache-doris/be/storage
+    privileged: true
+    environment:
+      - TZ=Asia/Shanghai
+      - RUN_MODE=be
+      - FE_SERVERS=fe1:dfe-1:9010,fe2:dfe-2:9010,fe3:dfe-3:9010
+      - BE_ADDR=dbe-3:9050
+    # ports:
+    #   - 29050:9050
+    networks:
+      doris-network:
+
+volumes:
+  dfe-1-doris-meta:
+  dfe-1-log:
+  dbe-1-storage:
+  dbe-1-log:
+  dfe-2-doris-meta:
+  dfe-2-log:
+  dbe-2-storage:
+  dbe-2-log:
+  dfe-3-doris-meta:
+  dfe-3-log:
+  dbe-3-storage:
+  dbe-3-log:
+networks:
+  doris-network:
+    external: true
+

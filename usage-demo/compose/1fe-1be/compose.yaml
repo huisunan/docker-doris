@@ -1,0 +1,47 @@
+services:  
+  cfe-1:
+    image: docker.io/dyrnq/doris:2.1.7
+    restart: always
+    hostname: cfe-1
+    volumes:
+      - cfe-1-log:/opt/apache-doris/fe/log
+      - cfe-1-doris-meta:/opt/apache-doris/fe/doris-meta
+    privileged: true
+    environment:
+      - TZ=Asia/Shanghai
+      - RUN_MODE=fe
+      - FE_SERVERS=fe1:cfe-1:9010
+      - FE_ID=1
+    ports:
+      - 8030:8030
+      - 9030:9030
+    networks:
+      doris-network:
+        # ipv4_address: 172.20.80.2
+  cbe-1:
+    image: docker.io/dyrnq/doris:2.1.7
+    restart: always
+    hostname: cbe-1
+    volumes:
+      - cbe-1-log:/opt/apache-doris/be/log
+      - cbe-1-storage:/opt/apache-doris/be/storage
+    privileged: true
+    environment:
+      - TZ=Asia/Shanghai
+      - RUN_MODE=be
+      - FE_SERVERS=fe1:cfe-1:9010
+      - BE_ADDR=cbe-1:9050
+    ports:
+      - 9050:9050
+    networks:
+      doris-network:
+        # ipv4_address: 172.20.80.3
+volumes:
+  cfe-1-doris-meta:
+  cfe-1-log:
+  cbe-1-storage:
+  cbe-1-log:
+networks:
+  doris-network:
+    external: true
+

@@ -1,0 +1,153 @@
+#!/usr/bin/with-contenv bash
+# shellcheck shell=bash
+# shellcheck disable=SC1091
+# shellcheck disable=SC2086
+
+
+set -eo pipefail
+
+if grep -q -i "stand" <<< "${RUN_MODE}"; then
+
+
+    join_backend="$(hostname -I | awk '{print $1}')"
+    if [[ "${DORIS_VERSION}" > "2.0.0" || "${DORIS_VERSION}" == "2.0.0" ]]; then
+        if [ "${ENABLE_FQDN_MODE}" == "true" ]; then
+            join_backend="$(hostname -f)"
+        fi
+    fi
+
+
+    wait4x --timeout 86400s mysql "root@tcp(127.0.0.1:9030)/" && \
+    (
+        ## check if the backend is already added
+        if ! mysql -uroot -P9030 -h127.0.0.1 -e "show backends" | grep -q -E "${join_backend}.*9050"; then
+            mysql -uroot -P9030 -h127.0.0.1 -e "ALTER SYSTEM ADD BACKEND '${join_backend}:9050'"
+        fi
+    )
+fi
+
+## remark
+## //TODO
+## will ignore BE_SERVERS
+## will ignore FQDN
+## will ignore FE_MASTER_PORT //TODO
+
+
+if grep -q -i "fe" <<< "${RUN_MODE}"; then
+
+fe_master=""
+fe_join=()
+if [ -n "${FE_MASTER_IP}" ]; then
+    fe_master="${FE_MASTER_IP}"
+fi
+
+if [ -n "${FE_CURRENT_IP}" ]; then
+    fe_join+=("${FE_CURRENT_IP}:${FE_CURRENT_PORT:-9010}")
+fi
+
+
+if [ -n "${FE_SERVERS}" ]; then
+
+    # specific for k8s sts pod, because the FE_ID cant set var ENV
+    # so we need to get the index from hostname
+    if [ -z "${FE_ID}" ]; then
+        HOSTNAME="$(hostname -s)"
+        if [[ $HOSTNAME =~ (.*)-([0-9]+)$ ]]; then
+            ORD=${BASH_REMATCH[2]}
+            export FE_ID="$((ORD + 1 ))"
+        else
+            echo "Failed to get index from hostname $HOSTNAME"
+            exit 1
+        fi
+    fi
+
+
+
+
+    mapfile -d, -t feServerArray <<< "${FE_SERVERS}"
+    for i in "${!feServerArray[@]}"; do
+        val="${feServerArray[$i]}";
+        val=${val// /} ## remove all spaces
+
+        tmpFeName=$(echo "${val}"           | awk -F ':' '{ sub(/ /, ""); print$1}')
+        tmpFeIp=$(echo "${val}"             | awk -F ':' '{ sub(/ /, ""); print$2}')
+        tmpFeEditLogPort=$(echo "${val}"    | awk -F ':' '{ sub(/ /, ""); print$3}')
+
+        tmpFeName=${tmpFeName//[!0-9]/} ## remove all non-numeric characters
+        if [[ $i == 0 ]]; then
+            fe_master="${tmpFeIp}"
+        else
+            fe_join+=("${tmpFeIp}:${tmpFeEditLogPort}")
+        fi
+    done
+fi
+
+wait4x --timeout 86400s mysql "root@tcp(${fe_master}:9030)/" && \
+(
+    for k in "${!fe_join[@]}"; do
+        val="${fe_join[$k]}";
+        val_grep=${val//:/.*}
+        # echo "###########################################"
+        # echo "${val}"
+        # echo "${val_grep}"
+        # echo "###########################################"
+        ## check if the frontend is already added
+        if ! mysql -uroot -P9030 -h${fe_master} -e "show frontends;" | grep -q -E "${val_grep}"; then
+            mysql -uroot -P9030 -h${fe_master} -e "ALTER SYSTEM ADD FOLLOWER '${val}'"
+        fi
+    done
+)
+
+# mysql -uroot -P9030 -hfe-01 -e "ALTER SYSTEM ADD FOLLOWER 'fe-02:9010'"
+# mysql -uroot -P9030 -hfe-01 -e "ALTER SYSTEM ADD FOLLOWER 'fe-03:9010'"
+# mysql -uroot -P9030 -hfe-01 -e "ALTER SYSTEM DROP FOLLOWER 'fe-04:9010'"
+
+
+fi
+
+
+
+if grep -q -i "be" <<< "${RUN_MODE}"; then
+
+fe_master=""
+
+if [ -n "${FE_MASTER_IP}" ]; then
+    fe_master="${FE_MASTER_IP}"
+fi
+
+if [ -n "${FE_SERVERS}" ]; then
+    mapfile -d, -t feServerArray <<< "${FE_SERVERS}"
+    for i in "${!feServerArray[@]}"; do
+        val="${feServerArray[$i]}";
+        val=${val// /} ## remove all spaces
+
+        tmpFeName=$(echo "${val}"           | awk -F ':' '{ sub(/ /, ""); print$1}')
+        tmpFeIp=$(echo "${val}"             | awk -F ':' '{ sub(/ /, ""); print$2}')
+        tmpFeEditLogPort=$(echo "${val}"    | awk -F ':' '{ sub(/ /, ""); print$3}')
+
+        tmpFeName=${tmpFeName//[!0-9]/} ## remove all non-numeric characters
+        if [[ $i == 0 ]]; then
+            fe_master="${tmpFeIp}"
+        fi
+    done
+fi
+
+wait4x --timeout 86400s mysql "root@tcp(${fe_master}:9030)/" && \
+(
+    val="";
+
+    if [ -n "${BE_ADDR}" ]; then
+        val="${BE_ADDR}"
+    else
+        val="${BE_IP}:${BE_PORT:-9050}"
+    fi
+
+    val_grep=${val//:/.*}
+    if ! mysql -uroot -P9030 -h${fe_master} -e "show backends;" | grep -q -E "${val_grep}"; then
+        mysql -uroot -P9030 -h${fe_master} -e "ALTER SYSTEM ADD BACKEND '${val}'"
+    fi
+)
+
+
+fi
+

@@ -1,0 +1,28 @@
+services:  
+  xfe-1:
+    image: docker.io/dyrnq/doris:2.1.7
+    restart: always
+    hostname: xfe-1
+    volumes:
+      - xfe-1-log:/opt/apache-doris/fe/log
+      - xfe-1-doris-meta:/opt/apache-doris/fe/doris-meta
+      - xbe-1-log:/opt/apache-doris/be/log
+      - xbe-1-storage:/opt/apache-doris/be/storage
+    privileged: true
+    environment:
+      - TZ=Asia/Shanghai
+      - RUN_MODE=standalone
+    ports:
+      - 38030:8030
+      - 39030:9030
+    networks:
+      doris-network:
+volumes:
+  xfe-1-doris-meta:
+  xfe-1-log:
+  xbe-1-storage:
+  xbe-1-log:
+networks:
+  doris-network:
+    external: true
+

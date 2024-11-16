@@ -1,0 +1,243 @@
+---
+apiVersion: v1
+kind: Service
+metadata: 
+  name: doris-fe
+  namespace: default
+  labels: 
+    app: doris-fe
+spec:
+  # The following adds session affinity
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 28800
+  type: NodePort
+  ports: 
+    - name: http
+      port: 8030
+      protocol: TCP
+      targetPort: 8030
+      nodePort: 32130
+    - name: mysql
+      port: 9030
+      protocol: TCP
+      targetPort: 9030
+      nodePort: 32230
+    # - name: thrift-rpc
+    #   port: 9020
+    #   protocol: TCP
+    #   targetPort: 9020
+    #   nodePort: 32220
+    # - name: edit-log
+    #   port: 9010
+    #   protocol: TCP
+    #   targetPort: 9010
+    #   nodePort: 32210
+  selector: 
+    app: doris-fe
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: doris-fe-headless
+  labels:
+    app: doris-fe
+spec:
+  type: ClusterIP
+  clusterIP: None
+  publishNotReadyAddresses: true
+  ports:
+    - name: thrift-rpc
+      port: 9020
+      protocol: TCP
+      targetPort: 9020
+    - name: mysql
+      port: 9030
+      protocol: TCP
+      targetPort: 9030
+    - name: edit-log
+      port: 9010
+      protocol: TCP
+      targetPort: 9010
+  selector: 
+    app: doris-fe
+---
+kind: StatefulSet
+apiVersion: apps/v1
+metadata:
+  name: doris-fe
+  labels:
+    app: doris-fe
+spec:
+  serviceName: doris-fe-headless
+  updateStrategy:
+    rollingUpdate: {}
+    type: RollingUpdate
+  replicas: 3
+  selector:
+    matchLabels:
+      app: doris-fe
+  template:
+    metadata:
+      labels:
+        app: doris-fe
+    spec:
+      hostNetwork: false
+      dnsPolicy: ClusterFirst
+      containers:
+        - name: doris-fe
+          env:
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: POD_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+          - name: TZ
+            value: Asia/Shanghai
+          - name: RUN_MODE
+            value: FE
+          - name: FE_SERVERS
+            value: fe1:doris-fe-0.doris-fe-headless.default.svc.cluster.local:9010,fe2:doris-fe-1.doris-fe-headless.default.svc.cluster.local:9010,fe3:doris-fe-2.doris-fe-headless.default.svc.cluster.local:9010
+#   doris-fe-0.doris-fe-headless.default.svc.cluster.local
+#   doris-fe-1.doris-fe-headless.default.svc.cluster.local
+#   doris-fe-1.doris-fe-headless.default.svc.cluster.local
+          image: dyrnq/doris:2.1.7
+          volumeMounts:
+          - mountPath: /opt/apache-doris/fe/doris-meta
+            name: volume-fe
+          ports:
+            - containerPort: 8030
+              protocol: TCP
+            - containerPort: 9020
+              protocol: TCP
+            - containerPort: 9030
+              protocol: TCP
+            - containerPort: 9010
+              protocol: TCP
+      volumes:
+        - name: volume-fe
+          emptyDir: {}
+  # volumeClaimTemplates:
+  # - metadata:
+  #     name: volume-fe
+  #   spec:
+  #     accessModes: [ "ReadWriteOnce" ]
+  #     storageClassName: "local"
+  #     resources:
+  #       requests:
+  #         storage: 5Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: doris-be-headless
+  labels:
+    app: doris-be
+spec:
+  type: ClusterIP
+  clusterIP: None
+  publishNotReadyAddresses: true
+  ports:
+    - name: thrift-rpc
+      port: 9060
+      protocol: TCP
+      targetPort: 9060
+    - name: heartbeat
+      port: 9050
+      protocol: TCP
+      targetPort: 9050
+    - name: web
+      port: 8040
+      protocol: TCP
+      targetPort: 8040
+    - name: brpc
+      port: 8060
+      protocol: TCP
+      targetPort: 8060
+  selector: 
+    app: doris-be
+---
+kind: StatefulSet
+apiVersion: apps/v1
+metadata:
+  name: doris-be
+  labels:
+    app: doris-be
+spec:
+  serviceName: doris-be-headless
+  replicas: 3
+  selector:
+    matchLabels:
+      app: doris-be
+  template:
+    metadata:
+      labels:
+        app: doris-be
+    spec:
+      hostNetwork: false
+      dnsPolicy: ClusterFirst
+      terminationGracePeriodSeconds: 120
+      containers:
+        - name: doris-be
+          env:
+            - name: POD_IP
+              valueFrom:
+                 fieldRef:
+                   fieldPath: status.podIP
+            - name: POD_NAME
+              valueFrom:
+                 fieldRef:
+                   fieldPath: metadata.name
+            - name: NAMESPACE
+              valueFrom:
+                 fieldRef:
+                   fieldPath: metadata.namespace
+            - name: TZ
+              value: Asia/Shanghai
+            - name: RUN_MODE
+              value: BE
+            - name: FE_MASTER_IP
+              value: doris-fe-0.doris-fe-headless.default.svc.cluster.local
+            - name: FE_MASTER_PORT
+              value: "9030"
+            - name: BE_IP
+              value: $(POD_NAME).doris-be-headless.$(NAMESPACE).svc.cluster.local
+            - name: BE_PORT
+              value: "9050"
+          image: dyrnq/doris:2.1.7
+          volumeMounts:
+          - mountPath: /opt/apache-doris/be/storage
+            name: volume-be
+          ports:
+            - containerPort: 9060
+              protocol: TCP
+            - containerPort: 9050
+              protocol: TCP
+            - containerPort: 8040
+              protocol: TCP
+            - containerPort: 9050
+              protocol: TCP
+            - containerPort: 8060
+              protocol: TCP
+      volumes:
+        - name: volume-be
+          emptyDir: {}
+  # volumeClaimTemplates:
+  # - metadata:
+  #     name: volume-be
+  #   spec:
+  #     accessModes: [ "ReadWriteOnce" ]
+  #     storageClassName: "local"
+  #     resources:
+  #       requests:
+  #         storage: 10Gi
