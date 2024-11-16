@@ -57,16 +57,15 @@ _main() {
 if grep -q -i "stand" <<< "${RUN_MODE}"; then
     touch /etc/s6-overlay/s6-rc.d/user/contents.d/be
     touch /etc/s6-overlay/s6-rc.d/user/contents.d/fe
-fi
-
-if grep -q -i "fe" <<< "${RUN_MODE}"; then
+    touch /etc/s6-overlay/s6-rc.d/user/contents.d/cluster
+elif grep -q -i "fe" <<< "${RUN_MODE}"; then
     touch /etc/s6-overlay/s6-rc.d/user/contents.d/fe
+    touch /etc/s6-overlay/s6-rc.d/user/contents.d/cluster
+elif grep -q -i "be" <<< "${RUN_MODE}"; then
+    touch /etc/s6-overlay/s6-rc.d/user/contents.d/be
+    touch /etc/s6-overlay/s6-rc.d/user/contents.d/cluster
 fi
 
-if grep -q -i "be" <<< "${RUN_MODE}"; then
-    touch /etc/s6-overlay/s6-rc.d/user/contents.d/be
-fi
-touch /etc/s6-overlay/s6-rc.d/user/contents.d/cluster
 
 
     exec /init
