@@ -51,7 +51,7 @@ latest_tag=" --tag $repo/$image_name:$version"
 
 if [ "$latest" = "$version" ]; then
     echo "latest version is $latest"
-    latest_tag="--tag $repo/$image_name:latest"
+    latest_tag="${latest_tag} --tag $repo/$image_name:latest"
 fi
 
 
