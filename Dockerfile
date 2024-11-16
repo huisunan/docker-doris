@@ -72,14 +72,14 @@ RUN set -ex; \
             s6overlayArch="aarch64"; \
             wait4xArch="arm64"; \
             ripgrepArch="aarch64-unknown-linux-gnu"; \
-            if echo "${DORIS_VERSION}" | grep -q '^1'; then dorisArch="aarch64"; dorisFileExt=".tar.xz"; tarCmd="J"; else dorisArch="arm64"; dorisFileExt=".tar.gz"; tarCmd="z"; fi; \
+            if echo "${DORIS_VERSION}" | grep -q '^1.2.5'; then dorisArch="aarch64"; dorisFileExt=".tar.xz"; tarCmd="J"; else dorisArch="arm64"; dorisFileExt=".tar.gz"; tarCmd="z"; fi; \
             ;; \
         amd64|x86_64) \
             yqArch="amd64"; \
             s6overlayArch="x86_64"; \
             wait4xArch="amd64"; \
             ripgrepArch="x86_64-unknown-linux-musl"; \
-            if echo "${DORIS_VERSION}" | grep -q '^1'; then dorisArch="x86_64"; dorisFileExt=".tar.xz"; tarCmd="J"; else dorisArch="x64"; dorisFileExt=".tar.gz"; tarCmd="z"; fi; \
+            if echo "${DORIS_VERSION}" | grep -q '^1.2.5'; then dorisArch="x86_64"; dorisFileExt=".tar.xz"; tarCmd="J"; else dorisArch="x64"; dorisFileExt=".tar.gz"; tarCmd="z"; fi; \
             ;; \
         *) \
             echo "Unsupported arch: ${ARCH}"; \
