@@ -12,10 +12,37 @@ on:
         required: true
         default: '2.1.7'
 jobs:
+  generate-matrix:
+    name: Generate Job Matrix
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v3
+      - id: set-matrix
+        run: |
+          
+          mapfile -d, -t vers <<< "${{ github.event.inputs.version }}"
+    
+          json="{\"vers\":["
+          for tag in "${vers[@]}"; do
+            json="${json}\"${tag}\","
+          done
+          json=${json%,}
+          json="${json}]}"
+          echo ::set-output name=matrix::${json}
+      - name: Test version
+        run: |
+          echo ${{ steps.set-matrix.outputs.matrix }}
+
+
   build:
     runs-on: ubuntu-latest
+    if: needs.generate-matrix.outputs.matrix != ''
+    needs: [generate-matrix]
     strategy:
       fail-fast: false
+      matrix: ${{fromJSON(needs.generate-matrix.outputs.matrix)}}
     steps:
       -
         name: Checkout
@@ -38,7 +65,7 @@ jobs:
           echo "Platforms: ${{ steps.buildx.outputs.platforms }}"
       - name: Build dockerfile (with no push)
         run: |
-            ver="${{ github.event.inputs.version }}"
+            ver="${{ matrix.vers }}"
             echo "${ver}"
             ./buildx.sh --version ${ver} --push false --repo ${{ secrets.DOCKER_USERNAME }} --image-name doris
       -
@@ -51,6 +78,6 @@ jobs:
       - name: Build dockerfile (with push)
         run: |
             echo "Build dockerfile (with push)"
-            ver="${{ github.event.inputs.version }}"
+            ver="${{ matrix.vers }}"
             echo "${ver}"
             ./buildx.sh --version ${ver} --push true --repo ${{ secrets.DOCKER_USERNAME }} --image-name doris
