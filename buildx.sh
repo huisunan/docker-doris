@@ -7,6 +7,7 @@ push="${push:-false}"
 repo="${repo:-dyrnq}"
 image_name="${image_name:-doris}"
 platforms="${platforms:-linux/amd64,linux/arm64/v8}"
+curl_opts="${curl_opts:-}"
 while [ $# -gt 0 ]; do
     case "$1" in
         --base-image|--base)
@@ -19,6 +20,10 @@ while [ $# -gt 0 ]; do
             ;;
         --push)
             push="$2"
+            shift
+            ;;
+        --curl-opts)
+            curl_opts="$2"
             shift
             ;;
         --platforms)
@@ -71,6 +76,7 @@ docker buildx build \
 --output "type=image,push=${push}" \
 --build-arg BASE_IMAGE=${base_image} \
 --build-arg DORIS_VERSION=${version} \
+--build-arg CURL_OPTS=${curl_opts} \
 --file ./Dockerfile . \
 ${latest_tag}
 
