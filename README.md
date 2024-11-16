@@ -39,4 +39,4 @@ features:
 | demo       | path                                                                                                                                 |
 |------------|--------------------------------------------------------------------------------------------------------------------------------------|
 | standalone | [usage-demo/k8s/standalone/sts-nopvc.yaml](https://github.com/dyrnq/docker-doris/blob/main/usage-demo/k8s/standalone/sts-nopvc.yaml) |
-| 3fe-3be    | [usage-demo/k8s/3fe-3be/sts-nopvc.yaml](https://github.com/dyrnq/docker-doris/blob/main/usage-demo/k8s/standalone/sts-nopvc.yaml)    |
+| 3fe-3be    | [usage-demo/k8s/3fe-3be/sts-nopvc.yaml](https://github.com/dyrnq/docker-doris/blob/main/usage-demo/k8s/3fe-3be/sts-nopvc.yaml)    |
