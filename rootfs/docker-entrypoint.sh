@@ -6,8 +6,8 @@ set -eo pipefail
 conf_arrow_flight_sql_port(){
     file="$1"
     value="$2"
-
-    if [ -f "$file" ]; then
+    ## check if file is writable
+    if [ -w "$file" ]; then
         exist=$(grep -v "^#" < "${file}" | yq -p=props -o=yaml | yq 'has("arrow_flight_sql_port")')
 
         if [ "true" = "$exist" ]; then
@@ -20,10 +20,15 @@ conf_arrow_flight_sql_port(){
 }
 
 conf_enable_fqdn_mode(){
+
+    if [[ "${DORIS_VERSION}" < "2.0.0" ]]; then
+        return 0;
+    fi
+
     file="$1"
     value="$2"
-
-    if [ -f "$file" ]; then
+    ## check if file is writable
+    if [ -w "$file" ]; then
         exist=$(grep -v "^#" < "${file}" | yq -p=props -o=yaml | yq 'has("enable_fqdn_mode")')
 
         if [ "true" = "$exist" ]; then
@@ -48,23 +53,21 @@ _main() {
 
     conf_arrow_flight_sql_port "/opt/apache-doris/fe/conf/fe.conf" "${FE_ARROW_FLIGHT_SQL_PORT}"
     conf_arrow_flight_sql_port "/opt/apache-doris/be/conf/be.conf" "${BE_ARROW_FLIGHT_SQL_PORT}"
+    conf_enable_fqdn_mode "/opt/apache-doris/fe/conf/fe.conf" "${ENABLE_FQDN_MODE}"
 
-    if [[ "${DORIS_VERSION}" > "2.0.0" || "${DORIS_VERSION}" == "2.0.0" ]]; then
-        conf_enable_fqdn_mode "/opt/apache-doris/fe/conf/fe.conf" "${ENABLE_FQDN_MODE}"
+
+
+    if grep -q -i "stand" <<< "${RUN_MODE}"; then
+        touch /etc/s6-overlay/s6-rc.d/user/contents.d/be
+        touch /etc/s6-overlay/s6-rc.d/user/contents.d/fe
+        touch /etc/s6-overlay/s6-rc.d/user/contents.d/cluster
+    elif grep -q -i "fe" <<< "${RUN_MODE}"; then
+        touch /etc/s6-overlay/s6-rc.d/user/contents.d/fe
+        touch /etc/s6-overlay/s6-rc.d/user/contents.d/cluster
+    elif grep -q -i "be" <<< "${RUN_MODE}"; then
+        touch /etc/s6-overlay/s6-rc.d/user/contents.d/be
+        touch /etc/s6-overlay/s6-rc.d/user/contents.d/cluster
     fi
-
-
-if grep -q -i "stand" <<< "${RUN_MODE}"; then
-    touch /etc/s6-overlay/s6-rc.d/user/contents.d/be
-    touch /etc/s6-overlay/s6-rc.d/user/contents.d/fe
-    touch /etc/s6-overlay/s6-rc.d/user/contents.d/cluster
-elif grep -q -i "fe" <<< "${RUN_MODE}"; then
-    touch /etc/s6-overlay/s6-rc.d/user/contents.d/fe
-    touch /etc/s6-overlay/s6-rc.d/user/contents.d/cluster
-elif grep -q -i "be" <<< "${RUN_MODE}"; then
-    touch /etc/s6-overlay/s6-rc.d/user/contents.d/be
-    touch /etc/s6-overlay/s6-rc.d/user/contents.d/cluster
-fi
 
 
 
