@@ -20,6 +20,7 @@ docker run \
 --privileged=true \
 -p 8030:8030 \
 -p 9030:9030 \
+-p 8040:8040 \
 -v "${WORK_DIR}"/std/fe/doris-meta:/opt/apache-doris/fe/doris-meta \
 -v "${WORK_DIR}"/std/fe/log:/opt/apache-doris/fe/log \
 -v "${WORK_DIR}"/std/be/storage:/opt/apache-doris/be/storage \
