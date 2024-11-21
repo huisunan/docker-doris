@@ -16,6 +16,22 @@ features:
 - 2.1.0~2.1.7
 - 3.0.0~3.0.2
 
+## support envs
+
+| env            | default value | optional value                 | required |
+|----------------|---------------|--------------------------------|----------|
+| TZ             |               | Asia/Shanghai                  | no       |
+| RUN_MODE       |               | STANDALONE/FE/BE               | yes      |
+| FE_SERVERS     |               | ip or fqdn e.g. fe1:cfe-1:9010 | no       |
+| FE_ID          |               | 1                              | no       |
+| BE_ADDR        |               | ip or fqdn e.g. cbe-1:9050     | no       |
+| BE_IP          |               | ip or fqdn                     | no       |
+| BE_PORT        | 9050          |                                | no       |
+| FE_MASTER_IP   |               | ip or fqdn                     | no       |
+| FE_MASTER_PORT | 9030          |                                | no       |
+| USER           | root          |                                | no       |
+| PASSWORD       |               |                                | no       |
+
 ## usage demo
 
 ### docker run
