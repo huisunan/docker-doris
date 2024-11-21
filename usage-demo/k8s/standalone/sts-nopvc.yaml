@@ -78,6 +78,11 @@ spec:
       containers:
         - name: doris-stand
           env:
+          - name: HOST_IP
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: status.hostIP
           - name: POD_NAME
             valueFrom:
               fieldRef:
