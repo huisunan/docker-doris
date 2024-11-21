@@ -11,6 +11,7 @@ ARG RG_VERSION
 ARG YQ_VERSION
 ARG WAIT4X_VERSION
 ARG DORIS_VERSION
+ARG DORIS_DOWNLOAD_VERSION
 ARG CURL_OPTS
 
 ENV DEBIAN_FRONTEND=noninteractive \
@@ -24,7 +25,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     FE_ARROW_FLIGHT_SQL_PORT=${FE_ARROW_FLIGHT_SQL_PORT:-10030} \
     BE_ARROW_FLIGHT_SQL_PORT=${BE_ARROW_FLIGHT_SQL_PORT:-10040} \
     ENABLE_FQDN_MODE=${ENABLE_FQDN_MODE:-true}
-    
+
 
 
 
@@ -111,7 +112,7 @@ RUN set -ex; \
     curl ${CURL_OPTS} --retry 3 -f#SL https://github.com/BurntSushi/ripgrep/releases/download/${RG_VERSION}/ripgrep-${RG_VERSION}-${ripgrepArch}.tar.gz | tar -xzv --strip-components=1 -C /usr/local/bin/ ripgrep-${RG_VERSION}-${ripgrepArch}/rg;  \
     curl ${CURL_OPTS} --retry 3 -f#SL https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_${yqArch} -o /usr/local/bin/yq; \
     curl ${CURL_OPTS} --retry 3 -f#SL https://github.com/atkrad/wait4x/releases/download/${WAIT4X_VERSION}/wait4x-linux-${wait4xArch}.tar.gz | tar -xvz -C /usr/local/bin wait4x; \
-    curl              --retry 3 -f#SL https://apache-doris-releases.oss-accelerate.aliyuncs.com/apache-doris-${DORIS_VERSION}-bin-${dorisArch}${dorisFileExt} | tar -xv${tarCmd} -C /opt/apache-doris --strip-components=1; \
+    curl              --retry 3 -f#SL https://apache-doris-releases.oss-accelerate.aliyuncs.com/apache-doris-${DORIS_DOWNLOAD_VERSION}-bin-${dorisArch}${dorisFileExt} | tar -xv${tarCmd} -C /opt/apache-doris --strip-components=1; \
     chown -R ${uid}:${gid} /opt/apache-doris; \
     chmod +x /usr/local/bin/yq; \
     chmod +x /usr/local/bin/rg; \

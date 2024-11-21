@@ -70,12 +70,18 @@ if [[ "$version" == "3.0.0" ]]; then
     platforms="linux/amd64"
 fi
 
+download_version="${version}"
+if [[ "$version" == "2.0.15" ]]; then
+    download_version="2.0.15.1"
+fi
+
 
 docker buildx build \
 --platform ${platforms} \
 --output "type=image,push=${push}" \
 --build-arg BASE_IMAGE=${base_image} \
 --build-arg DORIS_VERSION=${version} \
+--build-arg DORIS_DOWNLOAD_VERSION=${download_version} \
 --build-arg CURL_OPTS=${curl_opts} \
 --file ./Dockerfile . \
 ${latest_tag}
