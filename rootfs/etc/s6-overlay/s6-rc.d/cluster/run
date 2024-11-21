@@ -12,6 +12,12 @@ if [ -n "${FE_MASTER_PORT}" ]; then
     fe_mysql_port="${FE_MASTER_PORT}"
 fi
 
+## remark
+## user will not created by this script!!
+## global get mysql user and passwd from env vars
+fe_mysql_user=${USER:-root}
+fe_mysql_pass=${PASSWD:-}
+
 if grep -q -i "stand" <<< "${RUN_MODE}"; then
 
 
@@ -23,11 +29,11 @@ if grep -q -i "stand" <<< "${RUN_MODE}"; then
     fi
 
 
-    wait4x --timeout 86400s mysql "root@tcp(127.0.0.1:${fe_mysql_port})/" && \
+    wait4x --timeout 86400s mysql "${fe_mysql_user}:${fe_mysql_pass}@tcp(127.0.0.1:${fe_mysql_port})/" && \
     (
         ## check if the backend is already added
-        if mysql -uroot -P${fe_mysql_port} -h127.0.0.1 -e "show backends" | grep -q -v -E "${join_backend}.*9050"; then
-            mysql -uroot -P${fe_mysql_port} -h127.0.0.1 -e "ALTER SYSTEM ADD BACKEND '${join_backend}:9050'"
+        if mysql -u${fe_mysql_user} -p${fe_mysql_pass} -P${fe_mysql_port} -h127.0.0.1 -e "show backends" | grep -q -v -E "${join_backend}.*9050"; then
+            mysql -u${fe_mysql_user} -p${fe_mysql_pass} -P${fe_mysql_port} -h127.0.0.1 -e "ALTER SYSTEM ADD BACKEND '${join_backend}:9050'"
         fi
     )
 fi
@@ -89,7 +95,7 @@ if [ -n "${FE_SERVERS}" ]; then
     done
 fi
 
-wait4x --timeout 86400s mysql "root@tcp(${fe_master}:${fe_mysql_port})/" && \
+wait4x --timeout 86400s mysql "${fe_mysql_user}:${fe_mysql_pass}@tcp(${fe_master}:${fe_mysql_port})/" && \
 (
     for k in "${!fe_join[@]}"; do
         val="${fe_join[$k]}";
@@ -99,8 +105,8 @@ wait4x --timeout 86400s mysql "root@tcp(${fe_master}:${fe_mysql_port})/" && \
         # echo "${val_grep}"
         # echo "###########################################"
         ## check if the frontend is already added
-        if mysql -uroot -P${fe_mysql_port} -h${fe_master} -e "show frontends;" | grep -q -v -E "${val_grep}"; then
-            mysql -uroot -P${fe_mysql_port} -h${fe_master} -e "ALTER SYSTEM ADD FOLLOWER '${val}'"
+        if mysql -u${fe_mysql_user} -p${fe_mysql_pass} -P${fe_mysql_port} -h${fe_master} -e "show frontends;" | grep -q -v -E "${val_grep}"; then
+            mysql -u${fe_mysql_user} -p${fe_mysql_pass} -P${fe_mysql_port} -h${fe_master} -e "ALTER SYSTEM ADD FOLLOWER '${val}'"
         fi
     done
 )
@@ -137,7 +143,7 @@ if [ -n "${FE_SERVERS}" ]; then
     done
 fi
 
-wait4x --timeout 86400s mysql "root@tcp(${fe_master}:${fe_mysql_port})/" && \
+wait4x --timeout 86400s mysql "${fe_mysql_user}:${fe_mysql_pass}@tcp(${fe_master}:${fe_mysql_port})/" && \
 (
     val="";
 
@@ -148,8 +154,8 @@ wait4x --timeout 86400s mysql "root@tcp(${fe_master}:${fe_mysql_port})/" && \
     fi
 
     val_grep=${val//:/.*}
-    if mysql -uroot -P${fe_mysql_port} -h${fe_master} -e "show backends;" | grep -q -v -E "${val_grep}"; then
-        mysql -uroot -P${fe_mysql_port} -h${fe_master} -e "ALTER SYSTEM ADD BACKEND '${val}'"
+    if mysql -u${fe_mysql_user} -p${fe_mysql_pass} -P${fe_mysql_port} -h${fe_master} -e "show backends;" | grep -q -v -E "${val_grep}"; then
+        mysql -u${fe_mysql_user} -p${fe_mysql_pass} -P${fe_mysql_port} -h${fe_master} -e "ALTER SYSTEM ADD BACKEND '${val}'"
     fi
 )
 
