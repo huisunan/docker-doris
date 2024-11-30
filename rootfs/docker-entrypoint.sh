@@ -19,6 +19,24 @@ conf_arrow_flight_sql_port(){
     fi
 }
 
+conf_priority_networks(){
+    file="$1"
+    value="$2"
+    ## check if file is writable
+    if [ -w "$file" ]; then
+        exist=$(grep -v "^#" < "${file}" | yq -p=props -o=yaml | yq 'has("priority_networks")')
+
+        if [ "true" = "$exist" ]; then
+            value_default=$(grep -v "^#" < "${file}" | yq -p=props -o=yaml | yq '.priority_networks')
+            if [[ "${value_default}" != "${value}" ]]; then                
+                sed -i "s/^priority_networks.*/priority_networks = ${value}/g" "$file"
+            fi
+        else
+            echo "priority_networks = ${value}" >> "$file" ## append
+        fi
+    fi
+}
+
 conf_enable_fqdn_mode(){
 
     if [[ "${DORIS_VERSION}" < "2.0.0" ]]; then
@@ -54,6 +72,9 @@ _main() {
     conf_arrow_flight_sql_port "/opt/apache-doris/fe/conf/fe.conf" "${FE_ARROW_FLIGHT_SQL_PORT}"
     conf_arrow_flight_sql_port "/opt/apache-doris/be/conf/be.conf" "${BE_ARROW_FLIGHT_SQL_PORT}"
     conf_enable_fqdn_mode "/opt/apache-doris/fe/conf/fe.conf" "${ENABLE_FQDN_MODE}"
+    if [ -n "${FE_PRIORITY_NETWORKS}" ]; then conf_priority_networks "/opt/apache-doris/fe/conf/fe.conf" "${FE_PRIORITY_NETWORKS}"; fi
+    if [ -n "${BE_PRIORITY_NETWORKS}" ]; then conf_priority_networks "/opt/apache-doris/be/conf/be.conf" "${BE_PRIORITY_NETWORKS}"; fi
+
 
 
 
