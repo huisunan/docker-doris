@@ -36,7 +36,7 @@ if grep -q -i "stand" <<< "${RUN_MODE}"; then
     wait4x --timeout 86400s mysql "${fe_mysql_user}:${fe_mysql_pass}@tcp(127.0.0.1:${fe_mysql_port})/" && \
     (
         ## check if the backend is already added
-        if mysql -u${fe_mysql_user} ${cmd_fe} -P${fe_mysql_port} -h127.0.0.1 -e "show backends" | grep -q -v -E "${join_backend}.*9050"; then
+        if ! mysql -u${fe_mysql_user} ${cmd_fe} -P${fe_mysql_port} -h127.0.0.1 -e "show backends" | grep -q -E "${join_backend}.*9050"; then
             mysql -u${fe_mysql_user} ${cmd_fe} -P${fe_mysql_port} -h127.0.0.1 -e "ALTER SYSTEM ADD BACKEND '${join_backend}:9050'"
         fi
     )
@@ -109,7 +109,7 @@ wait4x --timeout 86400s mysql "${fe_mysql_user}:${fe_mysql_pass}@tcp(${fe_master
         # echo "${val_grep}"
         # echo "###########################################"
         ## check if the frontend is already added
-        if mysql -u${fe_mysql_user} ${cmd_fe} -P${fe_mysql_port} -h${fe_master} -e "show frontends;" | grep -q -v -E "${val_grep}"; then
+        if ! mysql -u${fe_mysql_user} ${cmd_fe} -P${fe_mysql_port} -h${fe_master} -e "show frontends;" | grep -q -E "${val_grep}"; then
             mysql -u${fe_mysql_user} ${cmd_fe} -P${fe_mysql_port} -h${fe_master} -e "ALTER SYSTEM ADD FOLLOWER '${val}'"
         fi
     done
@@ -158,7 +158,7 @@ wait4x --timeout 86400s mysql "${fe_mysql_user}:${fe_mysql_pass}@tcp(${fe_master
     fi
 
     val_grep=${val//:/.*}
-    if mysql -u${fe_mysql_user} ${cmd_fe} -P${fe_mysql_port} -h${fe_master} -e "show backends;" | grep -q -v -E "${val_grep}"; then
+    if ! mysql -u${fe_mysql_user} ${cmd_fe} -P${fe_mysql_port} -h${fe_master} -e "show backends;" | grep -q -E "${val_grep}"; then
         mysql -u${fe_mysql_user} ${cmd_fe} -P${fe_mysql_port} -h${fe_master} -e "ALTER SYSTEM ADD BACKEND '${val}'"
     fi
 )
