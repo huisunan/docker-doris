@@ -34,6 +34,9 @@ features:
 | ENABLE_FQDN_MODE         | true          | true/false                     | no       |
 | FE_ARROW_FLIGHT_SQL_PORT | 10030         |                                | no       |
 | BE_ARROW_FLIGHT_SQL_PORT | 10040         |                                | no       |
+| FE_PRIORITY_NETWORKS     |               |                                | no       |
+| BE_PRIORITY_NETWORKS     |               |                                | no       |
+
 
 ## usage demo
 
