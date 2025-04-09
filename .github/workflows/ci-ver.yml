@@ -10,7 +10,7 @@ on:
       version:
         description: 'version to build'
         required: true
-        default: '2.1.7'
+        default: '2.1.8'
 jobs:
   generate-matrix:
     name: Generate Job Matrix
