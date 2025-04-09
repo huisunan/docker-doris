@@ -74,13 +74,13 @@ RUN set -ex; \
             ripgrepArch="aarch64-unknown-linux-gnu"; \
             case "${DORIS_VERSION}" in \
                 1.2.5) \
-                    dorisArch="aarch64"; dorisFileExt=".tar.xz"; tarCmd="J"; \
+                    dorisArch="aarch64"; dorisFileExt="-noavx2.tar.xz"; tarCmd="J"; \
                     ;; \
                 1.2.6|1.2.7|1.2.8) \
-                    dorisArch="arm64"; dorisFileExt=".tar.xz"; tarCmd="J"; \
+                    dorisArch="arm64"; dorisFileExt="-noavx2.tar.xz"; tarCmd="J"; \
                     ;; \
                 *) \
-                    dorisArch="arm64"; dorisFileExt=".tar.gz"; tarCmd="z"; \
+                    dorisArch="arm64"; dorisFileExt="-noavx2.tar.gz"; tarCmd="z"; \
                     ;; \
             esac; \
             ;; \
@@ -91,13 +91,13 @@ RUN set -ex; \
             ripgrepArch="x86_64-unknown-linux-musl"; \
             case "${DORIS_VERSION}" in \
                 1.2.5) \
-                    dorisArch="x86_64"; dorisFileExt=".tar.xz"; tarCmd="J"; \
+                    dorisArch="x86_64"; dorisFileExt="-noavx2.tar.xz"; tarCmd="J"; \
                     ;; \
                 1.2.6|1.2.7|1.2.8) \
-                    dorisArch="x64"; dorisFileExt=".tar.xz"; tarCmd="J"; \
+                    dorisArch="x64"; dorisFileExt="-noavx2.tar.xz"; tarCmd="J"; \
                     ;; \
                 *) \
-                    dorisArch="x64"; dorisFileExt=".tar.gz"; tarCmd="z"; \
+                    dorisArch="x64"; dorisFileExt="-noavx2.tar.gz"; tarCmd="z"; \
                     ;; \
             esac; \
             ;; \
